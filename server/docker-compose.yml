@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  esp12e-server:
+    build: .
+    ports:
+      - '9980:9980'
+    volumes:
+      - /home/fractal-tess/esp12e-server:/logs

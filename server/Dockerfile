@@ -11,9 +11,10 @@ COPY . .
 
 RUN pnpm install
 
-RUN addgroup -S nodejs && adduser -S nodejs -G nodejs
-RUN chown -R nodejs:nodejs /app
+RUN chown -R node:node /app
 
-EXPOSE 99800
+ENV DATABASE_URL=file:/logs/sqlite.db
 
-CMD [ "pnpm", "start" ]
+EXPOSE 9980
+
+CMD ["sh", "-c", "pnpm prisma db push && npm start"]
