@@ -3,7 +3,8 @@ version: '3'
 services:
   esp12e-server:
     build: .
+    user: 1001:1001
     ports:
       - '9980:9980'
     volumes:
-      - /home/fractal-tess/esp12e-server:/logs
+      - ./prisma/logs:/logs

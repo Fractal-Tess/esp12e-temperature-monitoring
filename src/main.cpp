@@ -9,7 +9,7 @@
 #include <DHT_U.h>
 
 DHT_Unified dht(0, DHT11);
-const String ENDPOINT = "http://192.168.0.2:9980/temperature";
+const String ENDPOINT = "http://192.168.0.3:9980/temperature";
 
 void initWiFi()
 {
@@ -55,7 +55,8 @@ void loop()
     String dataString;
     serializeJson(data, dataString);
 
-    http.POST(dataString);
+    auto code = http.POST(dataString);
+    Serial.println(code);
   }
   else
   {
