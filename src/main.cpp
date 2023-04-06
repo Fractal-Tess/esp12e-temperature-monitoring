@@ -7,6 +7,7 @@
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
+#include <wifi.hpp>
 
 DHT_Unified dht(0, DHT11);
 const String ENDPOINT = "http://192.168.0.3:9980/temperature";
@@ -14,7 +15,7 @@ const String ENDPOINT = "http://192.168.0.3:9980/temperature";
 void initWiFi()
 {
   WiFi.mode(WIFI_STA);
-  WiFi.begin("krasimir", "6901264486");
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to WiFi ..");
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -31,6 +32,14 @@ void setup()
   initWiFi();
   pinMode(LED_BUILTIN, OUTPUT);
   dht.begin();
+}
+
+void showErr()
+{
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(1000);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(1000);
 }
 
 void loop()
@@ -55,15 +64,16 @@ void loop()
     String dataString;
     serializeJson(data, dataString);
 
-    auto code = http.POST(dataString);
-    Serial.println(code);
+    int code = http.POST(dataString);
+    if (code != 200)
+    {
+      Serial.println(code);
+      showErr();
+    }
   }
   else
   {
-    Serial.println("Not connected to WiFi");
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(1000);
-    digitalWrite(LED_BUILTIN, LOW);
+    showErr();
   }
   delay(1000);
 }
