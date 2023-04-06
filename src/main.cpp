@@ -8,8 +8,8 @@
 #include <DHT.h>
 #include <DHT_U.h>
 
-DHT_Unified dht(2, DHT11);
-const String ENDPOINT = "http://192.168.0.2:9980/temperature";
+DHT_Unified dht(0, DHT11);
+const String ENDPOINT = "http://192.168.0.3:9980/temperature";
 
 void initWiFi()
 {
@@ -29,9 +29,8 @@ void setup()
 {
   Serial.begin(115200);
   initWiFi();
-  dht.begin();
-
   pinMode(LED_BUILTIN, OUTPUT);
+  dht.begin();
 }
 
 void loop()
@@ -41,42 +40,29 @@ void loop()
     WiFiClient client;
     HTTPClient http;
 
-    // Get temperature event and print its value.
-    sensors_event_t event;
-    dht.temperature().getEvent(&event);
-    if (isnan(event.temperature))
-    {
-      Serial.println(F("Error reading temperature!"));
-    }
-    else
-    {
-      Serial.print(F("Temperature: "));
-      Serial.print(event.temperature);
-      Serial.println(F("°C"));
-    }
-    // Get humidity event and print its value.
-    dht.humidity().getEvent(&event);
-    if (isnan(event.relative_humidity))
-    {
-      Serial.println(F("Error reading humidity!"));
-    }
-    else
-    {
-      Serial.print(F("Humidity: "));
-      Serial.print(event.relative_humidity);
-      Serial.println(F("%"));
-    }
+    sensors_event_t dht_event;
+    StaticJsonDocument<200> data;
+
+    dht.temperature().getEvent(&dht_event);
+    data["temperature"] = dht_event.temperature;
+
+    dht.humidity().getEvent(&dht_event);
+    data["humidity"] = dht_event.relative_humidity;
 
     http.begin(client, ENDPOINT.c_str());
     http.addHeader("content-type", "application/json");
-
-    StaticJsonDocument<200> data;
-    data["current"] = 25;
 
     String dataString;
     serializeJson(data, dataString);
 
     http.POST(dataString);
-    delay(1000);
   }
+  else
+  {
+    Serial.println("Not connected to WiFi");
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(1000);
+    digitalWrite(LED_BUILTIN, LOW);
+  }
+  delay(1000);
 }
